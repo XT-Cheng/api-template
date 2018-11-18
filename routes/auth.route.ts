@@ -26,6 +26,10 @@ export class AuthRoute {
             avatar: `assets/people.png`
         }
 
+        // res.status(200).json({
+        //     status: 1,
+        //     error: `Wrong Password!`
+        // });
         const jwtBearerToken = jwt.sign({
             name: user.name,
             email: user.email,
@@ -36,7 +40,8 @@ export class AuthRoute {
                 subject: user.name
             });
         res.status(200).json({
-            auth_app_token: jwtBearerToken
+            status: 0,
+            _token: jwtBearerToken
         });
     }
 }
