@@ -21,6 +21,7 @@ export class AuthRoute {
         const password = req.body.password;
 
         const user = {
+            id: 1,
             name: `admin`,
             email: `xyz@abc.com`,
             avatar: `assets/people.png`
@@ -31,6 +32,7 @@ export class AuthRoute {
         //     error: `Wrong Password!`
         // });
         const jwtBearerToken = jwt.sign({
+            id: user.id,
             name: user.name,
             email: user.email,
             avatar: user.avatar
