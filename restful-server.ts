@@ -6,6 +6,10 @@ import * as logger from 'morgan';
 import { concat, Observable } from 'rxjs';
 
 import { AuthRoute } from './routes/auth.route';
+import { Database } from './oracle';
+import { API } from './api';
+import { APIRoute } from './routes/api.route';
+import { FetchRoute } from './routes/fetch.route';
 
 /**
  * The server.
@@ -51,7 +55,7 @@ export class RestfulServer {
         this.port = this.normalizePort(process.env.PORT || 3000);
         this.app.set("port", this.port);
 
-        concat(this.connectDb(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
+        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
             }
@@ -59,10 +63,20 @@ export class RestfulServer {
     }
 
     private connectDb(): Observable<void> {
-        return Observable.create(async observer => {
-            console.log("DB Connected!");
+        return Observable.create(observer => {
+            Database.createPool().then(() => {
+                console.log("db connected");
+                observer.complete();
+            });
+        });
+    }
+
+    private initBapi(): Observable<void> {
+        return Observable.create(observer => {
+            API.initialize('cne35db03', 3500);
+            console.log("Bapi initialized");
             observer.complete();
-        })
+        });
     }
 
     private preRoute(): Observable<void> {
@@ -102,6 +116,8 @@ export class RestfulServer {
             AuthRoute.create(router);
 
             //Route create
+            APIRoute.create(router);
+            FetchRoute.create(router);
 
             //use router middleware
             this.app.use(router);
