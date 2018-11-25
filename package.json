@@ -27,6 +27,7 @@
     "method-override": "^2.3.10",
     "morgan": "^1.9.0",
     "oracledb": "^3.0.1",
+    "ref-wchar": "^1.0.2",
     "rxjs": "^6.0.0"
   },
   "devDependencies": {

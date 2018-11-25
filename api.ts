@@ -1,6 +1,5 @@
 import * as ref from 'ref';
 import * as ffi from 'ffi';
-import { resolveSoa } from 'dns';
 
 export class APIResult {
     errorMsg: string;
@@ -13,10 +12,10 @@ export class API {
 
     public static initialize(host: string, user: number) {
         if (!this._inited) {
-            this._def = ffi.Library('./ddcom64.dll',{ 
-                'ddinit':['int',['string','short']],
-                'ddsend':['int',['string',ref.refType('short')]],
-                'ddreceive': ['int',[ref.refType(ref.types.CString),ref.refType('short')]]
+            this._def = ffi.Library('./ddcom64.dll', {
+                'ddinit': ['int', ['string', 'short']],
+                'ddsend': ['int', ['string', ref.refType('short')]],
+                'ddreceive': ['int', [ref.refType(ref.types.CString), ref.refType('short')]]
             });
 
             let ret = this._def.ddinit(host, user);
@@ -39,7 +38,7 @@ export class API {
 
         console.log(`Dialog: ${dialog}`);
         return new Promise(function (resolve, reject) {
-             API.receive(resolve, reject);
+            API.receive(resolve, reject);
         });
     }
 
@@ -48,7 +47,7 @@ export class API {
         buf.type = ref.types.CString;
 
         console.log(`receive called!`);
-        let receive = this._def.ddreceive(buf,ref.alloc('short'));
+        let receive = this._def.ddreceive(buf, ref.alloc('short'));
 
         if (receive === 13) {
             setTimeout(() => {
@@ -59,7 +58,7 @@ export class API {
         }
         if (receive !== 0)
             throw new Error(`Message received failed: ${receive}`);
-            
+
         resolve(API.parseResult(buf.toString().replace(/\0/g, '')));
     }
 
@@ -69,8 +68,8 @@ export class API {
         console.log(`BAPI result: ${result}`);
 
         let isSuccess = (array[0] === 'RET=0');
-        let error = array[1].replace('KT=','');
-        let description = array[2].replace('LT=','').trimRight();
+        let error = array[1].replace('KT=', '');
+        let description = array[2].replace('LT=', '').trimRight();
 
         return {
             isSuccess: isSuccess,
