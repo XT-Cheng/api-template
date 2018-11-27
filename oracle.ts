@@ -11,6 +11,9 @@ export class Database {
                     user: "hydadm",
                     password: "HyTest$6",
                     connectString: "cne35db03/HYD1E35",
+                    poolMin: 10,
+                    poolMax: 10,
+                    poolIncrement: 0,
                 },
                 function (err, p) {
                     if (err) {
@@ -54,20 +57,20 @@ export class Database {
     }
 
     static releaseConnection(connection: IConnection): Promise<void> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             connection.close()
-            .then(() => resolve())
-            .catch((err) => reject(err));
+                .then(() => resolve())
+                .catch((err) => reject(err));
         });
     }
 
     static execute(sql, bindParams, options: IExecuteOptions, connection: IConnection): Promise<IExecuteReturn> {
-        return new Promise(function(resolve, reject) {
-            connection.execute(sql, bindParams, options, function(err, results) {
+        return new Promise(function (resolve, reject) {
+            connection.execute(sql, bindParams, options, function (err, results) {
                 if (err) {
                     return reject(err);
                 }
-     
+
                 resolve(results);
             });
         });
@@ -78,27 +81,28 @@ export class Database {
         let o = options || {};
         o.autoCommit = true;
         o.outFormat = oracledb.OBJECT;
-     
-        return new Promise(function(resolve, reject) {
+
+        return new Promise(function (resolve, reject) {
             Database.getConnection()
-                .then(function(connection){
+                .then(function (connection) {
                     Database.execute(sql, b, o, connection)
-                        .then(function(results) {
+                        .then(function (results) {
                             resolve(results);
-     
-                            process.nextTick(function() {
+
+                            process.nextTick(function () {
+                                (<any>Database.pool)._logStats();
                                 Database.releaseConnection(connection);
                             });
                         })
-                        .catch(function(err) {
+                        .catch(function (err) {
                             reject(err);
-     
-                            process.nextTick(function() {
+
+                            process.nextTick(function () {
                                 Database.releaseConnection(connection);
                             });
                         });
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     reject(err);
                 });
         });

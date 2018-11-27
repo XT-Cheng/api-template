@@ -52,7 +52,7 @@ export class RestfulServer {
     constructor() {
         //create expressjs application
         this.app = express();
-        this.port = this.normalizePort(process.env.PORT || 3000);
+        this.port = this.normalizePort(process.env.PORT || 3001);
         this.app.set("port", this.port);
 
         concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
@@ -174,4 +174,5 @@ export class RestfulServer {
     }
 }
 
+process.env.UV_THREADPOOL_SIZE = '10';
 new RestfulServer().start();
