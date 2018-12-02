@@ -90,7 +90,6 @@ export class Database {
                             resolve(results);
 
                             process.nextTick(function () {
-                                (<any>Database.pool)._logStats();
                                 Database.releaseConnection(connection);
                             });
                         })
