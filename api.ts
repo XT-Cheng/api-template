@@ -53,7 +53,7 @@ export class API {
             setTimeout(() => {
                 console.log(`receive 13!`);
                 API.receive(resolve, reject);
-            }, 1000);
+            }, 100);
             return null;
         }
         if (receive !== 0)

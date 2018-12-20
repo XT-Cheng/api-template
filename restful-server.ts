@@ -73,7 +73,7 @@ export class RestfulServer {
 
     private initBapi(): Observable<void> {
         return Observable.create(observer => {
-            API.initialize('cne35db03', Number.parseInt(process.env.TERMINAL));
+            API.initialize('cne35db03', Number.parseInt(process.env.TERMINAL || '3500'));
             console.log("Bapi initialized");
             observer.complete();
         });
