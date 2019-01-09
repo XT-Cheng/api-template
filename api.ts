@@ -18,6 +18,7 @@ export class API {
                 'ddreceive': ['int', [ref.refType(ref.types.CString), ref.refType('short')]]
             });
 
+            console.log(`Host:${host}, User:${user}`);
             let ret = this._def.ddinit(host, user);
 
             if (ret !== 0)
