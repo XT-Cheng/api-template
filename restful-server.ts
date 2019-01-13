@@ -22,6 +22,13 @@ export class RestfulServer {
     private port: any;
     private httpServer: Server
 
+    private dbUser: string;
+    private dbPassword: string;
+    private dbConnectString: string;
+
+    private bapiHost: string;
+    private bapiTerminal: number;
+
     /**
      * start the restful server
      *
@@ -53,29 +60,45 @@ export class RestfulServer {
         //create expressjs application
         this.app = express();
         this.port = this.normalizePort(process.env.PORT || 3001);
-        this.app.set("port", this.port);
+        console.log(`PORT: ${this.port}`);
+
+        this.dbUser = process.env.DBUSER || `hydadm`;
+        this.dbPassword = process.env.DBPASSWORD || `HyTest$6`;
+        this.dbConnectString = process.env.DBCONNECTSTRING || `cne35db03/HYD1E35`;
+        console.log(`DB USER: ${this.dbUser}`);
+        console.log(`DB PASSWORD: ${this.dbPassword}`);
+        console.log(`DB CONNECTSTRING: ${this.dbConnectString}`);
+
+        this.bapiHost = process.env.BAPIHOST || `cne35db03`;
+        this.bapiTerminal = Number.parseInt(process.env.BAPITERMINAL || `3500`);
+        console.log(`BAPI HOST: ${this.bapiHost}`);
+        console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
         concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
-            }
+            }, err => console.error(`RESTful Server start failed:${err}`)
         )
     }
 
     private connectDb(): Observable<void> {
         return Observable.create(observer => {
-            Database.createPool().then(() => {
+            Database.createPool(this.dbUser, this.dbPassword, this.dbConnectString).then(() => {
                 console.log("db connected");
                 observer.complete();
-            });
+            }, err => observer.error(err));
         });
     }
 
     private initBapi(): Observable<void> {
         return Observable.create(observer => {
-            API.initialize('cne35db03', Number.parseInt(process.env.TERMINAL || '3500'));
-            console.log("Bapi initialized");
-            observer.complete();
+            try {
+                API.initialize(this.bapiHost, this.bapiTerminal);
+                console.log("Bapi initialized");
+                observer.complete();
+            } catch (err) {
+                observer.error(err);
+            }
         });
     }
 

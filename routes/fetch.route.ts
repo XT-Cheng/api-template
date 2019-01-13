@@ -15,6 +15,12 @@ export class FetchRoute {
         console.log(req.body.sql);
         Database.fetch(req.body.sql).then((ret) => {
             res.json(ret.rows);
+        }, (reason) => {
+            console.log(`Fetch failed: ${reason.message}`);
+            res.json({
+                status: 1,
+                error: reason.message
+            });
         });
     }
 }

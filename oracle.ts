@@ -4,13 +4,13 @@ import { IConnectionPool, IConnection, IExecuteOptions, IPromise, IExecuteReturn
 export class Database {
     private static pool: IConnectionPool;
 
-    static createPool(): Promise<IConnectionPool> {
+    static createPool(user: string, password: string, connectString: string): Promise<IConnectionPool> {
         return new Promise(function (resolve, reject) {
             oracledb.createPool(
                 {
-                    user: "hydadm",
-                    password: "HyTest$6",
-                    connectString: "cne35db03/HYD1E35",
+                    user: user, // "hydadm",
+                    password: password, // "HyTest$6",
+                    connectString: connectString, //"cne35db03/HYD1E35",
                     poolMin: 10,
                     poolMax: 10,
                     poolIncrement: 0,

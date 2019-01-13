@@ -8,37 +8,46 @@ export class APIResult {
 
 export class API {
     static _inited: boolean;
+    static _isBusy: boolean;
     static _def: any;
 
     public static initialize(host: string, user: number) {
-        if (!this._inited) {
-            this._def = ffi.Library('./ddcom64.dll', {
+        if (!API._inited) {
+            API._def = ffi.Library('./ddcom64.dll', {
                 'ddinit': ['int', ['string', 'short']],
                 'ddsend': ['int', ['string', ref.refType('short')]],
                 'ddreceive': ['int', [ref.refType(ref.types.CString), ref.refType('short')]]
             });
 
-            console.log(`Host:${host}, User:${user}`);
-            let ret = this._def.ddinit(host, user);
+            let ret = API._def.ddinit(host, user);
 
             if (ret !== 0)
                 throw new Error(`API init failed: ${ret}`);
 
-            this._inited = true;
+            API._inited = true;
         }
     }
 
     public static execute(dialog: string): Promise<string> {
-        if (!this._inited)
-            throw new Error(`API not init yet`);
-
-        let sent = this._def.ddsend(dialog, ref.alloc('short'));
-
-        if (sent !== 0)
-            throw new Error(`Message sent failed: ${sent}`);
-
-        console.log(`Dialog: ${dialog}`);
         return new Promise(function (resolve, reject) {
+            if (!API._inited)
+                reject(`API not init yet`);
+
+            if (API._isBusy) {
+                setTimeout(() => {
+                    console.log(`Busy!`);
+                    API.execute(dialog);
+                }, 100);
+            }
+            API._isBusy = true;
+            let sent = API._def.ddsend(dialog, ref.alloc('short'));
+
+            if (sent !== 0) {
+                API._isBusy = false;
+                reject(`Message sent failed: ${sent}`);
+            }
+
+            console.log(`Dialog: ${dialog}`)
             API.receive(resolve, reject);
         });
     }
@@ -48,7 +57,7 @@ export class API {
         buf.type = ref.types.CString;
 
         console.log(`receive called!`);
-        let receive = this._def.ddreceive(buf, ref.alloc('short'));
+        let receive = API._def.ddreceive(buf, ref.alloc('short'));
 
         if (receive === 13) {
             setTimeout(() => {
@@ -57,9 +66,12 @@ export class API {
             }, 100);
             return null;
         }
-        if (receive !== 0)
+        if (receive !== 0) {
+            API._isBusy = false;
             throw new Error(`Message received failed: ${receive}`);
+        }
 
+        API._isBusy = false;
         resolve(API.parseResult(buf.toString().replace(/\0/g, '')));
     }
 

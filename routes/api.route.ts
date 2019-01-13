@@ -12,10 +12,15 @@ export class APIRoute {
     }
 
     private static execute(req: Request, res: Response, next: NextFunction) {
-       API.execute(req.body.dialog).then(ret => {
-           res.json(ret);
-       }, (reason) => {
-           console.log(reason);
-       });
+        API.execute(req.body.dialog).then(ret => {
+            res.json(ret);
+        }, (reason) => {
+            console.log(`BAPI Executed failed: ${reason}`);
+            console.log(reason);
+            res.json({
+                status: 1,
+                error: reason
+            });
+        });
     }
 }
