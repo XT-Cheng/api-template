@@ -12,15 +12,22 @@ export class APIRoute {
     }
 
     private static execute(req: Request, res: Response, next: NextFunction) {
-        API.execute(req.body.dialog).then(ret => {
-            res.json(ret);
-        }, (reason) => {
-            console.log(`BAPI Executed failed: ${reason}`);
-            console.log(reason);
-            res.json({
-                status: 1,
-                error: reason
+        if (API._isBusy) {
+            setTimeout(() => APIRoute.execute(req, res, next), 100);
+        } else {
+            API._isBusy = true;
+            API.execute(req.body.dialog).then(ret => {
+                API._isBusy = false;
+                res.json(ret);
+            }, (reason) => {
+                API._isBusy = false;
+                console.log(`BAPI Executed failed: ${reason}`);
+                console.log(reason);
+                res.json({
+                    status: 1,
+                    error: reason
+                });
             });
-        });
+        }
     }
 }

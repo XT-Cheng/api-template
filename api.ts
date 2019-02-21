@@ -7,8 +7,8 @@ export class APIResult {
 }
 
 export class API {
-    static _inited: boolean;
-    static _isBusy: boolean;
+    static _inited: boolean = false;
+    static _isBusy: boolean = false;
     static _def: any;
 
     public static initialize(host: string, user: number) {
@@ -30,21 +30,16 @@ export class API {
 
     public static execute(dialog: string): Promise<string> {
         return new Promise(function (resolve, reject) {
-            if (!API._inited)
+            if (!API._inited) {
                 reject(`API not init yet`);
-
-            if (API._isBusy) {
-                setTimeout(() => {
-                    console.log(`Busy!`);
-                    API.execute(dialog);
-                }, 100);
+                return;
             }
-            API._isBusy = true;
+
             let sent = API._def.ddsend(dialog, ref.alloc('short'));
 
             if (sent !== 0) {
-                API._isBusy = false;
                 reject(`Message sent failed: ${sent}`);
+                return;
             }
 
             console.log(`Dialog: ${dialog}`)
@@ -67,11 +62,10 @@ export class API {
             return null;
         }
         if (receive !== 0) {
-            API._isBusy = false;
-            throw new Error(`Message received failed: ${receive}`);
+            reject(`Message received failed: ${receive}`);
+            return;
         }
 
-        API._isBusy = false;
         resolve(API.parseResult(buf.toString().replace(/\0/g, '')));
     }
 

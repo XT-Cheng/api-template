@@ -59,7 +59,7 @@ export class RestfulServer {
     constructor() {
         //create expressjs application
         this.app = express();
-        this.port = this.normalizePort(process.env.PORT || 3001);
+        this.port = this.normalizePort(process.env.PORT || 3000);
         console.log(`PORT: ${this.port}`);
 
         this.dbUser = process.env.DBUSER || `hydadm`;
