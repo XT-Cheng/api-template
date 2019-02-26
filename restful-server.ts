@@ -10,6 +10,8 @@ import { Database } from './oracle';
 import { API } from './api';
 import { APIRoute } from './routes/api.route';
 import { FetchRoute } from './routes/fetch.route';
+import { setInterval } from 'timers';
+import { Jobs } from './jobs';
 
 /**
  * The server.
@@ -74,7 +76,7 @@ export class RestfulServer {
         console.log(`BAPI HOST: ${this.bapiHost}`);
         console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
-        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
+        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute(), this.setupTimer()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
             }, err => console.error(`RESTful Server start failed:${err}`)
@@ -126,7 +128,15 @@ export class RestfulServer {
         return Observable.create(observer => {
             this.app.use(errorHandler());
             console.log("postRoute");
-            observer.next();
+            observer.complete();
+        })
+    }
+
+    private setupTimer(): Observable<void> {
+        return Observable.create(observer => {
+            setInterval(Jobs.testJob, 5000);
+            console.log("setupTimer");
+            observer.complete();
         })
     }
 
