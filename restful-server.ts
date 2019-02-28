@@ -72,7 +72,7 @@ export class RestfulServer {
         console.log(`DB CONNECTSTRING: ${this.dbConnectString}`);
 
         this.bapiHost = process.env.BAPIHOST || `cne35db03`;
-        this.bapiTerminal = Number.parseInt(process.env.BAPITERMINAL || `3500`);
+        this.bapiTerminal = Number.parseInt(process.env.BAPITERMINAL || `3600`);
         console.log(`BAPI HOST: ${this.bapiHost}`);
         console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
