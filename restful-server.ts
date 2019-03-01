@@ -10,8 +10,7 @@ import { Database } from './oracle';
 import { API } from './api';
 import { APIRoute } from './routes/api.route';
 import { FetchRoute } from './routes/fetch.route';
-import { setInterval } from 'timers';
-import { Jobs } from './jobs';
+import { CheckListResultMonitor } from './jobs/checkList.result.monitor';
 
 /**
  * The server.
@@ -76,7 +75,7 @@ export class RestfulServer {
         console.log(`BAPI HOST: ${this.bapiHost}`);
         console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
-        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute(), this.setupTimer()).subscribe(
+        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute(), this.initState(), this.setupTimer()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
             }, err => console.error(`RESTful Server start failed:${err}`)
@@ -124,6 +123,14 @@ export class RestfulServer {
         })
     }
 
+    private initState(): Observable<void> {
+        return Observable.create(async observer => {
+            CheckListResultMonitor.currentShift = await CheckListResultMonitor.getCurrentShift();
+            console.log("initState");
+            observer.complete();
+        })
+    }
+
     private postRoute(): Observable<void> {
         return Observable.create(observer => {
             this.app.use(errorHandler());
@@ -134,8 +141,8 @@ export class RestfulServer {
 
     private setupTimer(): Observable<void> {
         return Observable.create(observer => {
-            setInterval(Jobs.testJob, 5000);
-            console.log("setupTimer");
+            // setTimeout(CheckListResultMonitor.execute, 1000);
+            // console.log("setupTimer");
             observer.complete();
         })
     }

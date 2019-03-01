@@ -28,6 +28,20 @@ export class API {
         }
     }
 
+    public static queueToExecute(dialog: string) {
+        if (API._isBusy) {
+            setTimeout(() => API.queueToExecute(dialog), 100);
+        } else {
+            API._isBusy = true;
+            API.execute(dialog).then(ret => {
+                API._isBusy = false;
+            }, (reason) => {
+                API._isBusy = false;
+                console.log(`BAPI Executed failed: ${reason}`);
+            });
+        }
+    }
+
     public static execute(dialog: string): Promise<string> {
         return new Promise(function (resolve, reject) {
             if (!API._inited) {
