@@ -6,6 +6,7 @@ import { format } from "date-fns";
 
 export class CheckListResultMonitor {
     // #region Const
+    static EXECUTE_INTERVAL = 30000;
     static USER_BADGE = 20120821;
 
     static SHIFT_CHECK_MACHINE = 'KM-00001';
@@ -120,11 +121,9 @@ export class CheckListResultMonitor {
     }
 
     public static async execute() {
-        console.log(`CheckListResultMonitor execute start`);
         await CheckListResultMonitor.ShiftChangeCheck();
         await CheckListResultMonitor.CheckListResultCheck();
-        setTimeout(CheckListResultMonitor.execute, 1000);
-        console.log(`CheckListResultMonitor execute end`);
+        setTimeout(CheckListResultMonitor.execute, CheckListResultMonitor.EXECUTE_INTERVAL);
     }
 
     //#region Private methods

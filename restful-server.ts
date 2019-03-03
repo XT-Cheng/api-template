@@ -75,6 +75,8 @@ export class RestfulServer {
         console.log(`BAPI HOST: ${this.bapiHost}`);
         console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
+        console.log(`CheckList Monitor Interval: ${CheckListResultMonitor.EXECUTE_INTERVAL}`);
+
         concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute(), this.initState(), this.setupTimer()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
@@ -141,8 +143,8 @@ export class RestfulServer {
 
     private setupTimer(): Observable<void> {
         return Observable.create(observer => {
-            // setTimeout(CheckListResultMonitor.execute, 1000);
-            // console.log("setupTimer");
+            setTimeout(CheckListResultMonitor.execute, CheckListResultMonitor.EXECUTE_INTERVAL);
+            console.log("setupTimer");
             observer.complete();
         })
     }

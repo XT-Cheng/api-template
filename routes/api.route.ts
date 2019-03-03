@@ -22,7 +22,6 @@ export class APIRoute {
             }, (reason) => {
                 API._isBusy = false;
                 console.log(`BAPI Executed failed: ${reason}`);
-                console.log(reason);
                 res.json({
                     status: 1,
                     error: reason
