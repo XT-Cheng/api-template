@@ -134,7 +134,7 @@ export class CheckListResultMonitor {
         CheckListResultsOfCurrentShift: Map<number, any>
     }) {
         let shouldChangeStatus = false;
-        // If machine has Article Change Items?
+        // If machine has Shift Change Items?
         let checkListItems = ((await Database.fetch(replaceAll(CheckListResultMonitor.getCheckListItemsSql
             , [CheckListResultMonitor.MachinesTBR, CheckListResultMonitor.ProcessTypeTBR]
             , [machine.Machine, CheckListResultMonitor.SHIFT_CHANGE_PROCESS_TYPE]))).rows as any[]).map((row: any) => {
@@ -143,7 +143,7 @@ export class CheckListResultMonitor {
         if (checkListItems.length == 0) {
             shouldChangeStatus = true;
         } else {
-            // One machine should have only 1 Check List Item for Article Change
+            // One machine should have only 1 Check List Item for Shift Change
             // If all CheckList Item has been finished with current Shift
             ((await Database.fetch(replaceAll(CheckListResultMonitor.getCheckListDoneOfShiftChange
                 , [CheckListResultMonitor.MachinesTBR, CheckListResultMonitor.HeaderIdTBR, CheckListResultMonitor.ShiftStartTBR]
@@ -234,7 +234,8 @@ export class CheckListResultMonitor {
     private static async ShiftChangeCheck() {
         let currentShift = await CheckListResultMonitor.getCurrentShift();
 
-        if (CheckListResultMonitor.currentShift.shiftNbr !== currentShift.shiftNbr || CheckListResultMonitor.currentShift.shiftStart !== currentShift.shiftStart) {
+        if (CheckListResultMonitor.currentShift.shiftNbr !== currentShift.shiftNbr
+            || CheckListResultMonitor.currentShift.shiftStart.getTime() !== currentShift.shiftStart.getTime()) {
             CheckListResultMonitor.currentShift = currentShift;
             // Select all Machine has 160 assigned
             let machines = ((await Database.fetch(CheckListResultMonitor.getMachinesSql)).rows as any[]).map((row: any) => {
@@ -248,9 +249,19 @@ export class CheckListResultMonitor {
                 , [machines.join(',')]))).rows as any[]).map((row: any) => {
                     return row.MACHINE;
                 });
-            machines.forEach(machine => {
-                // Change it's status to 160 if it's status is not 160
-                API.queueToExecute(new ChangeMachineStatus(machine, CheckListResultMonitor.SHIFT_CHANGE_STATUS, CheckListResultMonitor.USER_BADGE).dialogString())
+            machines.forEach(async machine => {
+                // If machine has Shift Change Items?
+                let checkListItems = ((await Database.fetch(replaceAll(CheckListResultMonitor.getCheckListItemsSql
+                    , [CheckListResultMonitor.MachinesTBR, CheckListResultMonitor.ProcessTypeTBR]
+                    , [machine, CheckListResultMonitor.SHIFT_CHANGE_PROCESS_TYPE]))).rows as any[]).map((row: any) => {
+                        return { HeaderId: row.PMDM_HEADER_ID, CheckListType: row.CHECKLIST_TYPE };
+                    });
+
+                if (checkListItems.length > 0) {
+                    // Change it's status to 160 
+                    // TODO: Check if it's status is not 160
+                    API.queueToExecute(new ChangeMachineStatus(machine, CheckListResultMonitor.SHIFT_CHANGE_STATUS, CheckListResultMonitor.USER_BADGE).dialogString())
+                }
             });
         }
     }
@@ -258,7 +269,8 @@ export class CheckListResultMonitor {
     private static async CheckListResultCheck() {
         let currentShift = await CheckListResultMonitor.getCurrentShift();
 
-        if (CheckListResultMonitor.currentShift.shiftNbr !== currentShift.shiftNbr || CheckListResultMonitor.currentShift.shiftStart !== currentShift.shiftStart) {
+        if (CheckListResultMonitor.currentShift.shiftNbr !== currentShift.shiftNbr
+            || CheckListResultMonitor.currentShift.shiftStart.getTime() !== currentShift.shiftStart.getTime()) {
             CheckListResultMonitor.currentShift = currentShift;
         }
 
