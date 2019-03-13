@@ -5,7 +5,7 @@ export class Database {
     private static pool: IConnectionPool;
 
     static createPool(user: string, password: string, connectString: string): Promise<IConnectionPool> {
-        oracledb.fetchAsString = [oracledb.CLOB];
+        (<any>oracledb).fetchAsString = [oracledb.CLOB];
         return new Promise(function (resolve, reject) {
             oracledb.createPool(
                 {

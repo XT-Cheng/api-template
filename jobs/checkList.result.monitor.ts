@@ -293,7 +293,8 @@ export class CheckListResultMonitor {
                 shouldChangeStatus = await CheckListResultMonitor.ifChangeOverCheckListFinished(machine);
             } else {
                 // If machine is 160 (Shift Change)
-                shouldChangeStatus = (await CheckListResultMonitor.ifShiftChangeCheckListFinished(machine)) && (await CheckListResultMonitor.ifChangeOverCheckListFinished(machine));
+                // TODO: Consider if also has Change Over?
+                shouldChangeStatus = await CheckListResultMonitor.ifShiftChangeCheckListFinished(machine);
             }
             if (shouldChangeStatus) {
                 API.queueToExecute(new ChangeMachineStatus(machine.Machine, CheckListResultMonitor.PRODUCTION_STATUS, CheckListResultMonitor.USER_BADGE).dialogString())
