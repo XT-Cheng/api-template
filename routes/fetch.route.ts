@@ -13,7 +13,7 @@ export class FetchRoute {
 
     private static execute(req: Request, res: Response, next: NextFunction) {
         Database.fetch(req.body.sql).then((ret) => {
-            res.json(ret.rows);
+            res.json(ret.rows ? ret.rows : {});
         }, (reason) => {
             console.log(req.body.sql);
             console.log(`Fetch failed: ${reason.message}`);

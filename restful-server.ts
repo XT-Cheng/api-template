@@ -10,7 +10,6 @@ import { Database } from './oracle';
 import { API } from './api';
 import { APIRoute } from './routes/api.route';
 import { FetchRoute } from './routes/fetch.route';
-import { CheckListResultMonitor } from './jobs/checkList.result.monitor';
 
 /**
  * The server.
@@ -60,7 +59,7 @@ export class RestfulServer {
     constructor() {
         //create expressjs application
         this.app = express();
-        this.port = this.normalizePort(process.env.PORT || 3000);
+        this.port = this.normalizePort(process.env.PORT || 4000);
         console.log(`PORT: ${this.port}`);
 
         this.dbUser = process.env.DBUSER || `hydadm`;
@@ -75,9 +74,7 @@ export class RestfulServer {
         console.log(`BAPI HOST: ${this.bapiHost}`);
         console.log(`BAPI TERMINAL: ${this.bapiTerminal}`);
 
-        console.log(`CheckList Monitor Interval: ${CheckListResultMonitor.EXECUTE_INTERVAL}`);
-
-        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute(), this.initState(), this.setupTimer()).subscribe(
+        concat(this.connectDb(), this.initBapi(), this.preRoute(), this.routes(), this.postRoute()).subscribe(
             _ => {
                 console.log("RESTful Server Initialized!");
             }, err => console.error(`RESTful Server start failed:${err}`)
@@ -125,26 +122,10 @@ export class RestfulServer {
         })
     }
 
-    private initState(): Observable<void> {
-        return Observable.create(async observer => {
-            CheckListResultMonitor.currentShift = await CheckListResultMonitor.getCurrentShift();
-            console.log("initState");
-            observer.complete();
-        })
-    }
-
     private postRoute(): Observable<void> {
         return Observable.create(observer => {
             this.app.use(errorHandler());
             console.log("postRoute");
-            observer.complete();
-        })
-    }
-
-    private setupTimer(): Observable<void> {
-        return Observable.create(observer => {
-            setTimeout(CheckListResultMonitor.execute, CheckListResultMonitor.EXECUTE_INTERVAL);
-            console.log("setupTimer");
             observer.complete();
         })
     }
